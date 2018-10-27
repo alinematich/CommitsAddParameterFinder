@@ -1,6 +1,5 @@
 from pydriller import RepositoryMining
 from pydriller.domain.commit import ModificationType
-import re
 import javalang
 
 class Parameter:
@@ -13,9 +12,14 @@ class Parameter:
 
     __repr__ = __str__
 
+    def __eq__(self, other):
+        return self.name == other.name
+
 class Method:
-    def __init__(self, method):
+    def __init__(self, method, path):
         self.name = method.name
+        if path:
+            self.name = '::'.join(path) + '::' + method.name
         self.parameters = map(Parameter, method.parameters)
         return_type = 'void'
         if method.return_type:
@@ -23,12 +27,15 @@ class Method:
         modifiers = ' '.join(list(method.modifiers))
         if modifiers:
             modifiers += ' '
-        self.signature =  modifiers + return_type + ' ' + method.name + '(' + ', '.join(map(str, self.parameters)) + ')'
+        self.signature =  modifiers + return_type + ' ' + self.name + '(' + ', '.join(map(str, self.parameters)) + ')'
     
     def __str__(self):
         return self.signature
 
     __repr__ = __str__
+
+    def __eq__(self, other):
+        return self.name == other.name
 
 def getFirstOfChunkInfo(line):
     infoParts = line.strip().split('@@')
@@ -60,20 +67,22 @@ def getOldDocFromDiff(newDoc, diff):
             else:
                 oldDoc.append(newDoc[lineNum])
                 lineNum += 1
+    oldDoc += newDoc[lineNum:]
     return '\n'.join(oldDoc)
 
 # constructor declaration
 
-def parse(code, filename):
+def parseMethods(code):
     tree = javalang.parse.parse(code)
+    methods = []
     for path, node in tree.filter(javalang.tree.MethodDeclaration):
-        print(Method(node))
-        print("-----------------------#######################-----------------------")
+        methods.append(Method(node, map(lambda node: node.name, filter(lambda node: hasattr(node, 'name'), path))))
+    return sorted(methods, key= lambda item: item.name)
 
 repo = '../repos/jdk7u-jdk' # repo path either local or remote
 for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java']).traverse_commits():
     for modification in commit.modifications:
-        if modification.change_type != ModificationType.ADD and modification.change_type != ModificationType.DELETE and modification.added > 0 and modification.removed > 0:
+        if modification.filename.endswith('.java') and modification.change_type != ModificationType.ADD and modification.change_type != ModificationType.DELETE and modification.added > 0 and modification.removed > 0:
             needsAssess = False
             for method in modification.methods:
                 if method.parameters:
@@ -82,4 +91,15 @@ for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java'
             if needsAssess: # file may have "added paramerer methods"
                 newDoc = modification.source_code
                 oldDoc = getOldDocFromDiff(newDoc, modification.diff)
-                parse(newDoc, modification.new_path)
+                oldMethods = parseMethods(oldDoc)
+                newMethods = parseMethods(newDoc)
+                for oldMethod in oldMethods:
+                    for newMethod in newMethods:
+                        if oldMethod == newMethod:
+                            print(oldMethod)
+                            print()
+                            print(newMethod)
+                            print('------------################---------------')
+                            break
+
+
