@@ -3,9 +3,9 @@ from pydriller.domain.commit import ModificationType
 import re
 
 class Method:
-    def __init__(self, name, args):
+    def __init__(self, name, args, method):
         self.name = name
-        self.args = set(list(map(lambda arg: arg.replace('final', '').strip(), args)))
+        self.args = set(list(map(lambda arg: arg.replace('[', ' ').replace(']', ' ').split()[-1], args)))
 
     def hasLessArgsThan(self, other):
         return len(self.args & other.args) < len(other.args)
@@ -36,8 +36,8 @@ def getFirstOfChunkInfo(line):
 
 def getMethodDifferences(removedContent, addedContent):
     regex = r'\s*(public|private|protected)?(\s+static)?(\s+final)?\s+(\w+)\s+(\w+)\s*\(([^\)]+)\)\s*(throws [^\{]*)?\{'
-    oldMethods = sorted(list(map(lambda method: Method(method[4].strip(), method[5].split(',')), re.findall(regex, removedContent))), key= lambda item: item.name)
-    newMethods = sorted(list(map(lambda method: Method(method[4].strip(), method[5].split(',')), re.findall(regex, addedContent))), key= lambda item: item.name)
+    oldMethods = sorted(list(map(lambda method: Method(method[4].strip(), method[5].split(','), method), re.findall(regex, removedContent))), key= lambda item: item.name)
+    newMethods = sorted(list(map(lambda method: Method(method[4].strip(), method[5].split(','), method), re.findall(regex, addedContent))), key= lambda item: item.name)
     for oldMethod in oldMethods:
         for newMethod in newMethods:
             if oldMethod == newMethod and oldMethod.hasLessArgsThan(newMethod):
