@@ -3,6 +3,33 @@ from pydriller.domain.commit import ModificationType
 import re
 import javalang
 
+class Parameter:
+    def __init__(self, parameter):
+        self.name = parameter.name
+        self.type = parameter.type.name + '[]' * len(parameter.type.dimensions)
+
+    def __str__(self):
+        return self.type + ' ' + self.name
+
+    __repr__ = __str__
+
+class Method:
+    def __init__(self, method):
+        self.name = method.name
+        self.parameters = map(Parameter, method.parameters)
+        return_type = 'void'
+        if method.return_type:
+            return_type = method.return_type.name + '[]' * len(method.return_type.dimensions)
+        modifiers = ' '.join(list(method.modifiers))
+        if modifiers:
+            modifiers += ' '
+        self.signature =  modifiers + return_type + ' ' + method.name + '(' + ', '.join(map(str, self.parameters)) + ')'
+    
+    def __str__(self):
+        return self.signature
+
+    __repr__ = __str__
+
 def getFirstOfChunkInfo(line):
     infoParts = line.strip().split('@@')
     if len(infoParts) == 3 and line.startswith('@@'): # check if the format is correct
@@ -15,29 +42,23 @@ def getFirstOfChunkInfo(line):
         return linesInfo
     return None
 
-
 def getOldDocFromDiff(newDoc, diff):
     oldDoc = []
     newDoc = newDoc.split('\n')
     diff = diff.split('\n')
-    chunkInfo = None
     lineNum = 0
     for index, line in enumerate(diff):
-        info = getFirstOfChunkInfo(line)
-        if info: # it is chunk header
-            chunkInfo = (index, info)
-            oldDoc += newDoc[lineNum : info[2]]
-            lineNum = info[2]
+        chunkHeader = getFirstOfChunkInfo(line)
+        if chunkHeader: # it is chunk header
+            oldDoc += newDoc[lineNum : chunkHeader[2]]
+            lineNum = chunkHeader[2]
         else: # it is file content
             if line.startswith('-'):
                 oldDoc.append(line[1:])
             elif line.startswith('+'):
                 lineNum += 1
             else:
-                try: 
-                    oldDoc.append(newDoc[lineNum])
-                except:
-                    break
+                oldDoc.append(newDoc[lineNum])
                 lineNum += 1
     return '\n'.join(oldDoc)
 
@@ -46,20 +67,8 @@ def getOldDocFromDiff(newDoc, diff):
 def parse(code, filename):
     tree = javalang.parse.parse(code)
     for path, node in tree.filter(javalang.tree.MethodDeclaration):
-        if node.parameters:
-            print(node)
-            print()
-            print(filename)
-            print()
-            print(node.modifiers)
-            print()
-            if node.return_type:
-                print(node.return_type.name)
-                print()
-            print(node.name)
-            print()
-            print(node.parameters)
-            print("-----------------------#######################-----------------------")
+        print(Method(node))
+        print("-----------------------#######################-----------------------")
 
 repo = '../repos/jdk7u-jdk' # repo path either local or remote
 for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java']).traverse_commits():
