@@ -20,7 +20,7 @@ class Method:
         self.name = method.name
         if path:
             self.name = '::'.join(path) + '::' + method.name
-        self.parameters = map(Parameter, method.parameters)
+        self.parameters = list(map(Parameter, method.parameters))
         return_type = 'void'
         if method.return_type:
             return_type = method.return_type.name + '[]' * len(method.return_type.dimensions)
@@ -96,10 +96,13 @@ for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java'
                 for oldMethod in oldMethods:
                     for newMethod in newMethods:
                         if oldMethod == newMethod:
-                            print(oldMethod)
-                            print()
-                            print(newMethod)
-                            print('------------################---------------')
+                            intersection = len(set(map(str, oldMethod.parameters)) & set(map(str, newMethod.parameters)))
+                            if len(oldMethod.parameters) == intersection and len(newMethod.parameters) > intersection:
+                                print(commit.hash)
+                                print(modification.new_path)
+                                print(oldMethod)
+                                print(newMethod)
+                                print('------------################---------------')
                             break
 
 
