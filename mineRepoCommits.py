@@ -1,6 +1,7 @@
 from pydriller import RepositoryMining
 from pydriller.domain.commit import ModificationType
 import re
+import javalang
 
 class Method:
     def __init__(self, method):
@@ -73,14 +74,28 @@ def readDiffToDetectChangedMethods(diff):
                 removedContent = ''
                 addedContent = ''
 
+def do(code):
+    tree = javalang.parse.parse(code)
+    for path, node in tree.filter(javalang.tree.MethodDeclaration):
+        if node.parameters:
+            print(node.modifiers)
+            print()
+            print(node.return_type)
+            print()
+            print(node.name)
+            print()
+            print(node.parameters)
+            print("-----------------------#######################-----------------------")
+
 repo = '../repos/jdk7u-jdk' # repo path either local or remote
 for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java']).traverse_commits():
     for modification in commit.modifications:
         if modification.change_type != ModificationType.ADD and modification.change_type != ModificationType.DELETE and modification.added > 0 and modification.removed > 0:
             needsAssess = False
             for method in modification.methods:
-                if len(method.parameters) > 0:
+                if method.parameters:
                     needsAssess = True
                     break
             if needsAssess: # file may have "added paramerer methods" 
-                readDiffToDetectChangedMethods(modification.diff)
+                # readDiffToDetectChangedMethods(modification.diff)
+                do(modification.source_code)
