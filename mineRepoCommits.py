@@ -50,13 +50,13 @@ def populateMethod(method, path): # modify method object and add variables that 
         method.parameters = list(map(lambda parameter: parameter.type.name + '[]' * len(parameter.type.dimensions) + ' ' + parameter.name, method.parameters))
         return_type = ''
         if hasattr(method, 'return_type'): # not constructor
-            return_type = 'void'
+            return_type = 'void '
             if method.return_type: # not void
-                return_type = method.return_type.name + '[]' * len(method.return_type.dimensions)
+                return_type = method.return_type.name + '[]' * len(method.return_type.dimensions) + ' '
         modifiers = ' '.join(list(method.modifiers))
         if modifiers:
             modifiers += ' '
-        method.signature =  modifiers + return_type + ' ' + method.name + '(' + ', '.join(method.parameters) + ')'
+        method.signature =  modifiers + return_type + method.name + '(' + ', '.join(method.parameters) + ')'
 
 def parseMethods(code, diff):
     tree = javalang.parse.parse(code) # creates AST from code string
