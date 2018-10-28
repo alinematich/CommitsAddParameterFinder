@@ -33,10 +33,10 @@ $ python3 mineRepoCommits.py
 
 This code is already ran on these two repositories:
 
-https://github.com/TheAlgorithms/Java
+Repository: https://github.com/TheAlgorithms/Java
 
-result : https://github.com/alinematich/CommitsAddParameterFinder/blob/master/results/Java-Results.csv
+Result: https://github.com/alinematich/CommitsAddParameterFinder/blob/master/results/Java-Results.csv
 
-https://github.com/iluwatar/java-design-patterns
+Repository: https://github.com/iluwatar/java-design-patterns
 
-result: https://github.com/alinematich/CommitsAddParameterFinder/blob/master/results/java-design-patterns-Results.csv
+Result: https://github.com/alinematich/CommitsAddParameterFinder/blob/master/results/java-design-patterns-Results.csv
