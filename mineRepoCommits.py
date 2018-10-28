@@ -81,6 +81,7 @@ def parseMethods(code, diff):
     return res # format: [[method1, method2], [method3, method4]]
 
 repo = '../repos/java-design-patterns' # repo path either local or remote
+repo = '../repos/Java' # repo path either local or remote
 outfile = open('results.csv', mode='w')
 writer = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 writer.writerow(['Commit SHA', 'Java File', 'Old function signature', 'New function signature'])
@@ -92,10 +93,16 @@ for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java'
     for modification in commit.modifications:
         if modification.filename.endswith('.java') and modification.change_type != ModificationType.ADD and modification.change_type != ModificationType.DELETE and modification.added > 0 and modification.removed > 0:
             newDoc = modification.source_code
-            newMethods = parseMethods(newDoc, modification.diff)
+            try:
+                newMethods = parseMethods(newDoc, modification.diff)
+            except:
+                break
             newMethodsNames = set(map(lambda methodlist: methodlist[0].name, newMethods))
             oldDoc = getOldDocFromDiff(newDoc, modification.diff)
-            oldMethods = parseMethods(oldDoc, modification.diff)
+            try:
+                oldMethods = parseMethods(oldDoc, modification.diff)
+            except:
+                break
             oldMethodsNames = set(map(lambda methodlist: methodlist[0].name, oldMethods))
             methodNamesIntersection = oldMethodsNames & newMethodsNames # remove functions which are not in both files
             for oldMethodlist in oldMethods:
