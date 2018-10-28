@@ -80,9 +80,9 @@ def parseMethods(code, diff):
         tmpMethod = method
     return res # format: [[method1, method2], [method3, method4]]
 
-repo = '../repos/java-design-patterns' # repo path either local or remote
-repo = '../repos/Java' # repo path either local or remote
-outfile = open('results.csv', mode='w')
+repo = input('Please type local or remote repository path: ')
+outputFilename = input('Please type results filename(without .csv): ')
+outfile = open(outputFilename+'.csv', mode='w')
 writer = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 writer.writerow(['Commit SHA', 'Java File', 'Old function signature', 'New function signature'])
 i = 1
