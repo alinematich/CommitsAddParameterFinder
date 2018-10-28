@@ -123,5 +123,6 @@ for commit in RepositoryMining(repo, only_modifications_with_file_types=['.java'
                         if counterOldMethod: # added parameter detected
                             writer.writerow([commit.hash, modification.new_path, counterOldMethod.signature, newMethod.signature])
                     break
-
+print('Repository has been successfully mined!')
+print('You can see the results in ' + outputFilename + '.csv')
 outfile.close()
