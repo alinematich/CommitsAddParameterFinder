@@ -81,7 +81,9 @@ def parseMethods(code, diff):
     return res # format: [[method1, method2], [method3, method4]]
 
 repo = input('Please type local or remote repository path: ')
-outputFilename = input('Please type results filename(without .csv): ')
+outputFilename = input('Please type results filename(without .csv) [default: results]: ')
+if not outputFilename:
+    outputFilename = 'results'
 outfile = open(outputFilename+'.csv', mode='w')
 writer = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 writer.writerow(['Commit SHA', 'Java File', 'Old function signature', 'New function signature'])
