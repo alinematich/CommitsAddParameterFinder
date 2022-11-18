@@ -1,5 +1,5 @@
 # CommitsAddParameterFinder
-Finds all the commits that add a parameter to a method in java files.
+Finds all the Git commits that add a parameter to a method in Java files.
 
 ## Installation
 Install python3
